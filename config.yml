@@ -1,0 +1,18 @@
+model_config:
+  name: base
+  channels: 3
+  n_classes: 10
+  dim_sizes:
+    - 4
+    - 8
+    - 16
+    - 32
+trainer_config:
+  n_gpus: 1
+  max_epochs: 15
+  auto_lr_find: true
+experiment_config:
+  name: experiment-1
+  train_path: "data/train"
+  val_path: "data/val"
+  lr: 0.1

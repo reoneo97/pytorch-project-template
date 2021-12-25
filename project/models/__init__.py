@@ -1,3 +1,3 @@
 from .conv import *
 
-models = {}
+models = {"base": BaseModel, "stack": StackModel}
