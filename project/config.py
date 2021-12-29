@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Dict, List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from yaml.events import StreamStartEvent
 import project
 import yaml
@@ -18,13 +18,16 @@ class ModelConfig(BaseModel):
     padding: Optional[int] = 1
     dropout_p: Optional[float] = 0.2
 
-    # Validation for Float Parameter
-
     # Validation for Dim_sizes
+    @validator('dim_sizes')
+    def check_positive(cls, v):
+        for d in v:
+            assert d > 0, "Dim size must be > 0"
+        return v
 
 
 class TrainerConfig(BaseModel):
-    n_gpus: int
+    gpus: int
     max_epochs: int
     auto_lr_find: bool
 
@@ -34,6 +37,8 @@ class ExperimentConfig(BaseModel):
     train_path: str
     val_path: str
     lr: float
+    batch_size: Optional[int] = 32
+    weight_decay: Optional[float] = 0
 
 
 class Config(BaseModel):

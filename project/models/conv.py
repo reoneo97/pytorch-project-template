@@ -6,7 +6,8 @@ import torch.nn.functional as F
 
 
 class BaseModel(nn.Module):
-    def __init__(self, channels, n_classes, dim_sizes, kernel_size, stride, padding, **kwargs):
+    def __init__(self, channels: int, n_classes: int, dim_sizes: List[int],
+                 kernel_size: int, stride: int, padding: int, **kwargs):
         super(BaseModel, self).__init__()
         conv_stack = []
 
@@ -39,8 +40,31 @@ class BaseModel(nn.Module):
         return out.size()[2:]
 
 
-class StackModel(nn.Module):
-    pass
+class StackModel(BaseModel):
+    """StackModel convolutional network using Convolutional Stacks instead of 
+    single layers. Model inherits from BaseModel instead of nn.Module since the 
+    forward and check_final_size methods are the same
+
+    Args:
+        BaseModel (nn.Module): Base Convolutional Model
+    """
+
+    def __init__(self, channels, n_classes, dim_sizes, kernel_size, stride, padding, **kwargs):
+        super(BaseModel, self).__init__()
+        conv_stack = []
+
+        self.dim_sizes = dim_sizes
+        self.IMG_SIZE = 32
+        d_s = [channels] + dim_sizes  # Add Channels to the list of layer sizes
+        for i, d_in in enumerate(d_s[:-1]):
+            d_out = d_s[i+1]
+            layer = ConvPoolStack(d_in, d_out, kernel_size, stride, padding)
+            conv_stack.append(layer)
+
+        self.conv_stack = nn.Sequential(*conv_stack)
+        self.f_h, self.f_w = self.check_final_size()
+
+        self.fc = nn.Linear(self.dim_sizes[-1]*self.f_h * self.f_w, n_classes)
 
 
 class ConvSingle(nn.Module):
@@ -59,7 +83,10 @@ class ConvSingle(nn.Module):
 
 
 class ConvPoolStack(nn.Module):
-    # Convolutional Stack that results
+    """
+    Convolutional Stack with Pooling and Residual Connection
+    """    # Convolutional Stack that results
+
     def __init__(self, d_in, d_out, kernel_size, stride, padding):
         super(ConvPoolStack, self).__init__()
 
@@ -71,7 +98,6 @@ class ConvPoolStack(nn.Module):
                                stride=1, padding=1)
         self.conv3 = nn.Conv2d(d_in, d_out, kernel_size=3, stride=1, padding=1)
         self.pool = nn.MaxPool2d(stride)
-        self.activation = nn.GELU()
         self.norm = nn.BatchNorm2d(d_in)
         self.norm2 = nn.BatchNorm2d(d_out)
 

@@ -1,5 +1,5 @@
 model_config:
-  name: base
+  name: stack
   channels: 3
   n_classes: 10
   dim_sizes:
@@ -8,11 +8,11 @@ model_config:
     - 16
     - 32
 trainer_config:
-  n_gpus: 1
+  gpus: 1
   max_epochs: 15
-  auto_lr_find: true
+  auto_lr_find: false
 experiment_config:
   name: experiment-1
   train_path: "data/train"
   val_path: "data/val"
-  lr: 0.1
+  lr: 0.03
